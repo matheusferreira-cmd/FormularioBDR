@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Avaliação</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .text-custom-blue {
+            color: #1a73e8;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-4 sm:p-8 flex items-center justify-center">
+
+    <div class="max-w-4xl w-full mx-auto bg-white p-6 sm:p-10 rounded-xl shadow-lg border border-gray-200">
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-800 mb-6 text-center">Formulário de Avaliação</h1>
+        <p class="text-gray-600 mb-8 text-center text-sm sm:text-base">Preencha os campos abaixo para registrar a avaliação do candidato.</p>
+
+        <!-- Informações do Candidato -->
+        <div class="mb-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-700 mb-4">Informações do Candidato</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input id="candidate-name" type="text" placeholder="Nome do Candidato" class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input id="candidate-role" type="text" placeholder="Vaga" class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input id="interviewer-name" type="text" placeholder="Entrevistador(a)" class="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input id="current-date" type="text" disabled class="p-3 bg-gray-200 text-gray-600 rounded-lg border border-gray-300 cursor-not-allowed">
+            </div>
+        </div>
+
+        <!-- Seções de Avaliação (Tópicos) -->
+        <div id="evaluation-sections"></div>
+
+        <!-- Botão de Envio -->
+        <div class="text-center mt-8">
+            <button id="save-button" class="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white font-bold text-lg rounded-xl shadow-md hover:bg-blue-700 transition duration-300 ease-in-out transform hover:scale-105">
+                Salvar Avaliação
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Dados com os tópicos, perguntas e alternativas.
+        const evaluationData = [
+          // Tópico 1: Objetivos e Ambição
+          {
+            topic: "Tópico 1: Objetivos e ambição",
+            questions: [
+              {
+                id: "t1_q1",
+                text: "Quais são os seus objetivos profissionais de curto, médio e longo prazo?",
+                alternatives: [
+                  "Nota 1: Não tem objetivo definido; vive um dia de cada vez e demonstra falta de direção.",
+                  "Nota 2: Tem ideias vagas ou confusas sobre o futuro, sem clareza nos próximos passos.",
+                  "Nota 3: Tem uma noção geral de onde quer chegar, mas sem separar curto, médio e longo prazo.",
+                  "Nota 4: Tem objetivos razoavelmente claros, mas falta conexão com execução ou visão estratégica.",
+                  "Nota 5: Define metas específicas: curto prazo (desenvolver-se), médio (crescer com resultados), longo (empreender)."
+                ],
+              },
+              {
+                id: "t1_q2",
+                text: "Qual foi sua meta pessoal mais ousada nos últimos 12 meses? Quanto, quando e como mediu?",
+                alternatives: [
+                  "Nota 1: A pessoa não consegue citar uma meta ou a meta é muito genérica e não demonstra ousadia. A resposta é vaga, sem foco em resultados ou em como a meta foi medida. A pessoa pode dizer 'Minha meta era ser uma pessoa melhor'",
+                  "Nota 2: A pessoa cita uma meta, mas a forma de medição é frágil ou inexistente. Ela pode dizer 'Minha meta era ler mais livros. Li 5 livros no ano.' A resposta demonstra uma certa intenção, mas a meta não é ousada e a forma de medição não é clara",
+                  "Nota 3: A pessoa descreve uma meta funcional, mas que não é transformadora. Ela pode dizer 'Minha meta era correr 5 km. Eu me planejei para correr 3 vezes por semana e consegui.' A resposta é válida e mostra que a pessoa tem um certo nível de planejamento e disciplina",
+                  "Nota 4: A pessoa descreve uma meta ousada e bem definida, com um plano de ação claro. Ela pode dizer 'Minha meta era terminar uma maratona. Eu me planejei para correr 40 km por semana, e medi o progresso com um aplicativo de corrida. Eu registrava o tempo, a distância e o ritmo.' A resposta demonstra disciplina e capacidade de planejamento.",
+                  "Nota 5: A pessoa não apenas descreve uma meta, mas a transforma em uma narrativa de conquista. Ela demonstra que a ousadia está no desafio e na capacidade de execução. A resposta mostra que a pessoa é proativa, metódica e focada em resultados."
+                ],
+              },
+              {
+                id: "t1_q3",
+                text: "Conte um caso em que você sacrificou algo (tempo/lazer) para bater uma meta. Qual foi o resultado?",
+                alternatives: [
+                  "Nota 1: A pessoa não consegue citar uma situação real ou o sacrifício é superficial. A resposta é vaga e não demonstra um esforço real. Ela pode dizer 'Eu sacrifiquei meu lazer para terminar um trabalho e entreguei no prazo'.",
+                  "Nota 2: A pessoa cita um sacrifício, mas o resultado é frágil ou insignificante. Ela pode dizer 'Eu sacrifiquei minhas noites de sono para estudar para uma prova e tirei uma nota boa.' A resposta mostra um certo esforço, mas não demonstra uma visão estratégica ou um comprometimento de longo prazo.",
+                  "Nota 3: A pessoa descreve um sacrifício funcional e o resultado é positivo. Ela pode dizer 'Eu sacrifiquei meu final de semana para terminar um projeto no trabalho. O resultado foi que o projeto foi entregue no prazo e a equipe foi elogiada.' A resposta é válida e mostra que a pessoa é capaz de se dedicar a um objetivo, mas não demonstra a audácia ou a ambição de uma meta mais ousada.",
+                  "Nota 4: A pessoa descreve uma situação em que precisou fazer um sacrifício significativo para bater uma meta pessoal ou profissional. Ela pode explicar que abriu mão de viagens ou de hobbies para se dedicar a um projeto. A resposta demonstra disciplina e um claro senso de prioridade.",
+                  "Nota 5: A pessoa traz uma meta ousada e com um sacrifício significativo, com foco no processo e no resultado. Ela pode dizer 'Minha meta era conseguir uma promoção em 6 meses, e eu sabia que precisaria me destacar. Eu sacrifiquei meu tempo livre para fazer cursos e certificações na minha área, e para me voluntariar em projetos de outras equipes. O resultado foi que eu não apenas consegui a promoção, mas também me tornei referência em minha área de atuação."
+                ],
+              },
+              {
+                id: "t1_q4",
+                text: "Fale de um objetivo que você não bateu. O que você mudou depois?",
+                alternatives: [
+                  "Nota 1: não consegue citar objetivos ou os objetivos são muito genéricos. A resposta é vaga e demonstra falta de planejamento e de ambição. A pessoa pode dizer 'Minha meta é ter um cargo de liderança', sem definir o que isso significa, em que empresa ou em qual prazo.",
+                  "Nota 2: A pessoa cita objetivos, mas a forma de medição é frágil ou inexistente. Ela pode dizer 'Quero aprender mais sobre tecnologia e marketing''",
+                  "Nota 3: A pessoa descreve objetivos funcionais, mas que não são transformadores. Ela pode dizer 'Quero me aprofundar em duas ferramentas do meu trabalho e ter mais autonomia.' A resposta é válida e mostra que a pessoa tem um certo nível de planejamento e disciplina, mas a meta é comum e não demonstra a audácia esperada.",
+                  "Nota 4:A pessoa descreve três objetivos ousados e bem definidos, Ela mostra que a pessoa se desafia e que tem uma visão clara do que precisa ser feito para alcançar seus objetivos.",
+                  "Nota 5: A pessoa traz três objetivos ousados e com um plano de ação detalhado, com foco no processo e nos resultados. Ela pode dizer '1) Quero conseguir uma promoção em 12 meses; 2) Quero liderar um projeto que gere um retorno de 20% para a empresa; 3) Quero me tornar referência em minha área de atuação."
+                ],
+              },
+              {
+                id: "t1_q5",
+                text: "Quais três objetivos de carreira você quer atingir em 12–24 meses? Como vai quebrar em marcos mensais?",
+                alternatives: [
+                  "Nota 1: não consegue citar objetivos ou os objetivos são muito genéricos. A resposta é vaga e demonstra falta de planejamento e de ambição. A pessoa pode dizer 'Minha meta é ter um cargo de liderança', sem definir o que isso significa, em que empresa ou em qual prazo.",
+                  "Nota 2: A pessoa cita objetivos, mas a forma de medição é frágil ou inexistente. Ela pode dizer 'Quero aprender mais sobre tecnologia e marketing''",
+                  "Nota 3: A pessoa descreve objetivos funcionais, mas que não são transformadores. Ela pode dizer 'Quero me aprofundar em duas ferramentas do meu trabalho e ter mais autonomia.' A resposta é válida e mostra que a pessoa tem um certo nível de planejamento e disciplina, mas a meta é comum e não demonstra a audácia esperada.",
+                  "Nota 4: A pessoa descreve três objetivos ousados e bem definidos, Ela mostra que a pessoa se desafia e que tem uma visão clara do que precisa ser feito para alcançar seus objetivos.",
+                  "Nota 5: A pessoa traz três objetivos ousados e com um plano de ação detalhado, com foco no processo e nos resultados. Ela pode dizer '1) Quero conseguir uma promoção em 12 meses; 2) Quero liderar um projeto que gere um retorno de 20% para a empresa; 3) Quero me tornar referência em minha área de atuação."
+                ],
+              },
+              {
+                id: "t1_q6",
+                text: "Qual resultado financeiro (ou de performance) você quer alcançar em 12 meses e qual o plano para chegar lá?",
+                alternatives: [
+                  "Nota 1: A pessoa pode dizer 'Quero ter uma situação financeira melhor', sem definir o que isso significa ou como ela vai alcançar. Essa resposta demonstra falta de foco e de ambição.",
+                  "Nota 2: A pessoa cita um objetivo, mas o plano é frágil e a medição é inexistente. Ela pode dizer 'Quero ganhar mais dinheiro, e vou trabalhar mais para isso.' A resposta demonstra uma certa intenção, mas a meta não é ousada e a forma de medição não é clara.",
+                  "Nota 3: A pessoa descreve um objetivo funcional, mas que não é transformador. Ela pode dizer 'Quero economizar R$ 10.000 em 12 meses. Para isso, vou guardar R$ 833 por mês.' A resposta é válida e mostra que a pessoa tem um certo nível de planejamento e disciplina",
+                  "Nota 4: descreve um objetivo financeiro ousado e bem definido, com um plano de ação claro.",
+                  "Nota 5: traz um objetivo ousado e com um plano de ação detalhado, com foco no processo e nos resultados. Ela pode dizer 'Minha meta é aumentar meu salário em 20% nos próximos 12 meses. Para isso, eu me planejei para fazer um curso de especialização na minha área e me dedicar a projetos que me dêem mais visibilidade. Eu vou medir o meu progresso com base nas minhas conversas de feedback com o meu gestor, e vou buscar a promoção em 6 meses para que a meta seja alcançada.'"
+                ],
+              },
+            ],
+          },
+          // Tópico 2: Curiosidade
+          {
+            topic: "Tópico 2: Curiosidade",
+            questions: [
+              {
+                id: "t2_q1",
+                text: "Me conte sobre uma situação, no trabalho ou na vida pessoal, em que você precisou resolver um problema sem ter todas as informações ou recursos necessários. Como você fez para encontrar a solução?",
+                alternatives: [
+                  "Nota 1: Responde que travaria, que não saberia o que fazer ou que isso não é sua responsabilidade. Demonstra total falta de proatividade e 'street intelligence'.",
+                  "Nota 2: Diz que nunca passou por isso ou que sempre teve alguém para lhe dizer o que fazer. Mostra uma atitude passiva.",
+                  "Nota 3: A resposta é teórica ('Ah, eu pesquisaria na internet...') ou descreve uma situação em que ele simplesmente pediu para outra pessoa resolver. Não demonstra a capacidade de 'se virar' sozinho.",
+                  "Nota 4: Descreve uma situação onde pediu ajuda, mas de forma inteligente, já tendo pesquisado algumas opções antes. Mostra proatividade, mas ainda com um pouco de dependência.",
+                  "Nota 5: Descreve uma situação concreta onde tomou a iniciativa. A solução envolveu pesquisa autônoma ('fucei no Google/YouTube', 'li um manual'), conversas estratégicas com pessoas-chave ou uma solução criativa e prática. A narrativa mostra que ele não esperou por ordens e agiu para resolver."
+                ],
+              },
+              {
+                id: "t2_q2",
+                text: "Quando você não sabe algo, o que você faz nos primeiros 10 minutos?",
+                alternatives: [
+                  "Nota 1: A pessoa ignora a questão e não toma nenhuma atitude. A resposta é passiva e demonstra total falta de iniciativa.",
+                  "Nota 2: A pessoa menciona uma ação, mas a ação é reativa e não proativa. Ela pode dizer 'eu espero que alguém me diga o que fazer' ou 'eu pergunto para um colega'.",
+                  "Nota 3: A pessoa descreve uma ação funcional, mas que não é transformadora. Ela pode dizer 'eu busco a informação no Google'. A resposta é válida e mostra que a pessoa tem um certo nível de proatividade e de curiosidade, mas a ação é comum",
+                  "Nota 4: A pessoa demonstra uma ação inicial mais elaborada e estratégica. Ela pode dizer que pesquisa, usa IA e conversa com pessoas. A resposta mostra que a pessoa é proativa e que entende a importância de buscar a informação em múltiplas fontes",
+                  "Nota 5: A pessoa não apenas descreve a ação, mas a transforma em um processo de aprendizado. Ela pode dizer que pesquisa, usa IA, pergunta para pessoas e vê vídeos, e então estrutura a sua abordagem para resolver o problema de forma eficiente. A resposta mostra que a pessoa é curiosa, proativa"
+                ],
+              },
+              {
+                id: "t2_q3",
+                text: "Como você organiza o que aprende?",
+                alternatives: [
+                  "Nota 1: A pessoa não tem um método e age de forma passiva, sem um plano. A resposta é vaga",
+                  "Nota 2: A pessoa descreve uma ação, mas a ação é frágil e a medição é inexistente. Ela pode dizer 'eu anoto em um caderno' ou 'eu salvo em uma pasta'.",
+                  "Nota 3: A pessoa descreve uma ação funcional, mas que não é transformadora.",
+                  "Nota 4: A pessoa descreve uma ação mais elaborada e estratégica. Ela pode dizer que entende o conceito, faz anotações e pesquisa.",
+                  "Nota 5: A pessoa não apenas descreve a ação, mas a transforma em um processo de aprendizado. Ela pode dizer que entende o conceito, faz anotações, pesquisa, e depois estrutura a sua abordagem para resolver o problema de forma eficiente. A resposta mostra que a pessoa é curiosa, proativa"
+                ],
+              },
+            ],
+          },
+          // Tópico 3: Rotina e Disciplina
+          {
+            topic: "Tópico 3: Rotina e Disciplina",
+            questions: [
+              {
+                id: "t3_q1",
+                text: "Como você lida com rotinas repetitivas?",
+                alternatives: [
+                  "Nota 1: Diz que não gosta ou demonstra aversão a tarefas repetitivas.",
+                  "Nota 2: Tolera mal a repetição, faz por obrigação, sem envolvimento.",
+                  "Nota 3: Consegue lidar, mas sem muito ânimo; pode se perder sem variedade.",
+                  "Nota 4: Consegue executar bem mesmo sem muita novidade, tenta se organizar.",
+                  "Nota 5: Atua de forma tranquila, se programa, executa com foco e constância."
+                ],
+              },
+              {
+                id: "t3_q2",
+                text: "Descreva sua rotina da semana (acordar, estudo, treino, lazer). o que é fixo?",
+                alternatives: [
+                  "Nota 1: A pessoa não tem uma rotina e age de forma passiva, sem um plano. A resposta é vaga e demonstra falta de proatividade e de disciplina.",
+                  "Nota 2: A pessoa cita uma rotina, mas a rotina é frágil e a medição é inexistente. Ela pode dizer 'eu acordo e vou para o trabalho",
+                  "Nota 3: Descreve uma rotina que envolva, apenas, acordar, trabalhar e voltar pra casa, sem ter um adendo a crescimento pessoal e corporativo,",
+                  "Nota 4: A pessoa descreve uma rotina funcional, mas que não é transformadora. Ela pode dizer 'Eu acordo, vou para o trabalho, depois eu vou para a academia, e depois eu vou para casa'. A resposta é válida e mostra que a pessoa tem um certo nível de proatividade e de disciplina",
+                  "Nota 5: A pessoa descreve uma rotina ousada e bem definida, com um plano de ação claro. Ela pode dizer 'Eu acordo às 6 da manhã, vou para a academia, e depois eu vou para o trabalho. Eu faço uma pausa para almoçar, e depois eu volto a trabalhar. À noite, eu leio um livro ou faço um curso. Eu tenho um tempo para o lazer e para a família.'"
+                ],
+              },
+              {
+                id: "t3_q3",
+                text: "Quando não quer fazer algo mas precisa, qual o seu gatilho para começar?",
+                alternatives: [
+                  "Nota 1: A pessoa nunca seguiu um hábito nesse período ou a resposta é vaga e demonstra falta de disciplina.",
+                  "Nota 2: A pessoa descreve um hábito funcional, mas que não é transformador. 'Eu queria jogar melhor um jogo''",
+                  "Nota 3: A pessoa cita um hábito, mas a forma de registro é frágil ou inexistente. Ela pode dizer 'Eu tentei seguir um hábito de ir para a academia, mas não registrei o progresso'.",
+                  "Nota 4: A pessoa descreve um hábito ousado e bem definido, com um plano de ação claro.",
+                  "Nota 5: A pessoa traz um hábito ousado e com um plano de ação detalhado, com foco no processo e nos resultados."
+                ],
+              },
+              {
+                id: "t3_q4",
+                text: "Pratica atividade física? Com qual frequência?",
+                alternatives: [
+                  "Nota 1: Não se interessa por atividade fisica ou não pratica por não gostar",
+                  "Nota 2: A pessoa cita uma atividade, mas a frequência é frágil ou inexistente. Ela pode dizer 'Eu tento ir para a academia, mas a frequência não é regular'",
+                  "Nota 3: A pessoa pratica atividade fisica por conta de estar em ''alta'' o que mostra quão manipulavel ela é",
+                  "Nota 4: A pessoa descreve uma atividade funcional, mas que não é transformadora. Ela pode dizer 'Eu faço caminhada três vezes por semana",
+                  "Nota 5: A pessoa descreve uma atividade ousada e bem definida, com um plano de ação claro. Ela pode dizer 'Eu pratico corrida duas vezes por semana e faço musculação duas vezes por semana. Eu uso um aplicativo para registrar o progresso e me comprometi a manter a rotina, mesmo em dias de chuva."
+                ],
+              },
+              {
+                id: "t3_q5",
+                text: "O que você costuma fazer nos seus momentos de lazer e relaxamento?",
+                alternatives: [
+                  "Nota 1: Diz que só dorme ou não faz nada produtivo; demonstra apatia ou falta de energia.",
+                  "Nota 2: Fala apenas de assistir TV, ficar no celular ou jogar sem equilíbrio com outras atividades.",
+                  "Nota 3: Equilibra descanso com lazer moderado, mas sem hábitos de desenvolvimento pessoal ou social.",
+                  "Nota 4: Cita práticas como sair com amigos, ver conteúdos úteis, ou fazer algo leve com intenção.",
+                  "Nota 5: Aproveita o lazer para atividades construtivas: treinar, estudar, socializar com qualidade, etc."
+                ],
+              },
+            ],
+          },
+          // Tópico 4: Capacidade de aprendizado
+          {
+            topic: "Tópico 4: Capacidade de aprendizado",
+            questions: [
+              {
+                id: "t4_q1",
+                text: "Conte algo novo que você aprendeu no último mês e como aplicou no dia a dia.",
+                alternatives: [
+                  "Nota 1: A pessoa não traz nenhum conhecimento novo ou a resposta é vaga e genérica.",
+                  "Nota 2: A pessoa cita um conhecimento, mas a forma de aplicação é frágil ou inexistente. Ela pode dizer 'Eu aprendi sobre inteligência artificial, mas não apliquei nada'.",
+                  "Nota 3: A pessoa aprendeu algo e o aplicou em uma tarefa. A resposta é funcional e mostra que ela se mantém atualizada.",
+                  "Nota 4: A pessoa descreve um conhecimento funcional, mas que não é transformador. Ela pode dizer 'Eu aprendi sobre a técnica Pomodoro e comecei a usá-la'",
+                  "Nota 5: A pessoa aprendeu algo que gerou uma mudança de mentalidade ou de processo, com um impacto maior no seu trabalho ou vida."
+                ],
+              },
+              {
+                id: "t4_q2",
+                text: "Qual foi o conteúdo mais difícil que você aprendeu? Como você quebrou em passos.",
+                alternatives: [
+                  "Nota 1: A pessoa não consegue elaborar um argumento",
+                  "Nota 2: A pessoa cita um conteúdo, mas a forma de aprendizado é frágil",
+                  "Nota 3: A pessoa descreve um conteúdo funcional, 'queria tocar violão'",
+                  "Nota 4: A pessoa descreve um conteúdo ousado e bem definido",
+                  "Nota 5: Traz primeiro o porque era um conteúdo difícil pra ele, o que fez pra aprender e como se organizou com plano de ação"
+                ],
+              },
+              {
+                id: "t4_q3",
+                text: "Como você mede se aprendeu de verdade (indicador/resultado)?",
+                alternatives: [
+                  "Nota 1: A pessoa não tem um método para medir o aprendizado.",
+                  "Nota 2: A pessoa menciona uma forma superficial de medição, 'tempo de duração que estudou '",
+                  "Nota 3: A pessoa descreve um método funcional de medição. Ela pode dizer que mede o aprendizado por meio de anotações ou resumos",
+                  "Nota 4: Ela pode explicar que mede o aprendizado com base em um teste prático, na conclusão de um projeto ou na resolução de um problema.",
+                  "Nota 5: Uso ferramentas/aplicativos e feedbacks pra ver se de fato me desenvolvi"
+                ],
+              },
+            ],
+          },
+          // Tópico 5: Capacidade de execução
+          {
+            topic: "Tópico 5: Capacidade de execução",
+            questions: [
+              {
+                id: "t5_q1",
+                text: "Conte um objetivo concreto que você cumpriu recentemente (fora do trabalho). Qual meta, prazo e resultado?",
+                alternatives: [
+                  "Nota 1: Não tem nenhum objetivo claro ou definido pra passar",
+                  "Nota 2: O candidato tenta responder, mas o faz de forma reativa, sem um plano ou com uma visão superficial.",
+                  "Nota 3: O candidato alcançou uma meta, mas a resposta é previsível e genérica. A conquista, embora válida, não demonstra um grande esforço ou uma visão de crescimento.",
+                  "Nota 4: O candidato demonstra planejamento e disciplina. A meta é clara e a abordagem é metódica. Ele mostra que é capaz de definir um objetivo e seguir um plano, o que é uma qualidade muito valiosa.",
+                  "Nota 5: O candidato tem uma visão estratégica e a capacidade de transformar um desafio em um resultado concreto. A resposta vai além da meta em si e explica o porquê do objetivo e qual foi o impacto real gerado. A pessoa mostra que é capaz de se autogerenciar"
+                ],
+              },
+              {
+                id: "t5_q2",
+                text: "Fale de um prazo apertado que você cumpriu. O que priorizou, o que cortou e por quê?",
+                alternatives: [
+                  "Nota 1: A pessoa não consegue citar uma situação ou a resposta é vaga e genérica, demonstrando falta de proatividade",
+                  "Nota 2: O candidato tem um exemplo, mas a execução é frágil e a decisão é impulsiva. A resposta mostra que a pessoa não se planejou de forma estratégica",
+                  "Nota 3: O candidato descreve uma situação, mas a priorização e os cortes são básicos e não demonstram uma visão estratégica. A resposta é funcional e mostra que a pessoa é capaz de se organizar, mas não vai além do óbvio.",
+                  "Nota 4: O candidato demonstra planejamento e disciplina. Ele mostra que é capaz de definir um objetivo e seguir um plano, o que é uma qualidade muito valiosa. A resposta é forte, mas ainda dentro de um padrão esperado para um bom profissional.",
+                  "Nota 5: A pessoa traz um conteúdo ousado e com um plano de ação detalhado, com foco no processo e nos resultados. Ela demonstra proatividade, ambição e uma visão estratégica."
+                ],
+              },
+              {
+                id: "t5_q3",
+                text: "Qual rotina você usa para não esquecer tarefas (agenda, to-do, checklists)?",
+                alternatives: [
+                  "Nota 1: O candidato demonstra falta de iniciativa e de disciplina. A resposta é vaga e não descreve nenhuma rotina ou ferramenta.",
+                  "Nota 2: O candidato tem a intenção de ser organizado, mas a rotina é superficial e ineficaz.",
+                  "Nota 3: O candidato descreve um sistema que funciona, mas é básico e previsível. A rotina é prática, mas não demonstra um pensamento estratégico sobre como priorizar ou otimizar as tarefas.",
+                  "Nota 4: O candidato descreve um sistema bem definido e proativo. Ele não apenas usa uma ferramenta, mas explica a lógica por trás de sua rotina: como ele captura, organiza e prioriza as tarefas.",
+                  "Nota 5: O candidato não tem apenas um sistema, ele tem uma filosofia de organização. A rotina é integrada à vida pessoal e profissional e tem um propósito maior do que apenas não esquecer tarefas. A pessoa explica como o sistema a ajuda a focar em seus objetivos de longo prazo, a otimizar o tempo e a ser mais produtiva."
+                ],
+              },
+              {
+                id: "t5_q4",
+                text: "Quando você tinha várias tarefas no mesmo dia, como escolheu a ordem?",
+                alternatives: [
+                  "Nota 1: Só vai fazendo o que aparece",
+                  "Nota 2: Tende a seguir do mais antigo ao mais recente",
+                  "Nota 3: O candidato tem a intenção de ser organizado, mas de maneira básica",
+                  "Nota 4: O candidato sabe priorizar e por na frente as coisas mais importantes",
+                  "Nota 5: Organiza as mais importante e prioritárias para serem feitas primeiro e depois ia executando as outras, dentro de ferramentas ou CRM"
+                ],
+              },
+            ],
+          },
+          // Tópico 6: Resiliência e Inteligência Emocional
+          {
+            topic: "Tópico 6: Resiliência e Inteligência Emocional",
+            questions: [
+              {
+                id: "t6_q1",
+                text: "A área de pré-vendas (BDR) envolve ouvir muitos 'nãos' e trabalhar com metas diárias e mensais. Como você se mantém motivado mesmo nos dias em que nada parece dar certo?",
+                alternatives: [
+                  "Nota 1: Admite que se desmotiva facilmente, que não gosta de ser cobrado ou que ficaria muito frustrado com a rejeição. Mostra clara inadequação para a função.",
+                  "Nota 2: Demonstra preocupação ou hesitação. Respostas como 'Acho que seria difícil' ou 'Eu não gosto muito de pressão' indicam baixo alinhamento.",
+                  "Nota 3: Resposta padrão: 'Acho que eu lidaria bem', 'tem que ser resiliente', mas sem profundidade ou exemplos que mostrem que ele realmente já pensou sobre isso.",
+                  "Nota 4: Resposta positiva, afirmando que entende a pressão e que não se deixa abalar, mas sem a mesma conexão forte com os objetivos pessoais. A motivação parece mais teórica.",
+                  "Nota 5: A resposta demonstra resiliência e foco no objetivo maior. O candidato menciona que entende que o 'não' faz parte do processo e que o foco está no volume e na meta final. Cita suas ambições pessoais como o combustível para não desistir"
+                ],
+              },
+              {
+                id: "t6_q2",
+                text: "Conte uma situação recente em que você ficou irritado/triste/ansioso. o que fez nos primeiros 5 minutos?",
+                alternatives: [
+                  "Nota 1: O candidato não consegue se conectar com a pergunta ou a resposta é vaga.",
+                  "Nota 2: O candidato cita uma situação, mas a reação é reativa ou pouco madura. A pessoa pode dizer que 'explodiu' sem demonstrar uma ação consciente para lidar com a emoção.",
+                  "Nota 3: O candidato tem a intenção de lidar com a emoção, mas a resposta é superficial e a reação é passiva.",
+                  "Nota 4: O candidato tem a intenção de lidar com a emoção e a resposta é proativa e bem definida. A pessoa pode dizer que se afastou da situação, que conversou com alguém de confiança",
+                  "Nota 5: O candidato não tem apenas um método para lidar com a emoção, ele tem uma filosofia de autoconhecimento. A resposta é madura e revela uma visão de crescimento."
+                ],
+              },
+              {
+                id: "t6_q3",
+                text: "Quando alguém te critica, como separa tom de conteúdo? dê um exemplo.",
+                alternatives: [
+                  "Nota 1: O candidato não entende a importância do feedback ou reage de forma defensiva. A pessoa pode dizer que não se lembra de uma situação, que a crítica nunca é construtiva, ou que ela é muito sensível para lidar com isso.",
+                  "Nota 2: O candidato reconhece a crítica, mas falha em separar o tom do conteúdo. A pessoa pode dizer que se esforça para ignorar o tom, mas a sua reação emocional mostra que ela não consegue.",
+                  "Nota 3: O candidato tem um método para lidar com a crítica, mas é passivo. A pessoa pode dizer que 'apenas ouve o que é dito' ou que 'se afasta para pensar no que foi dito', mas não explica como ela usa a crítica para crescer.",
+                  "Nota 4: O candidato tem uma abordagem proativa para a crítica. A pessoa pode dizer que, quando o tom é agressivo, ela se concentra em fazer perguntas para entender o conteúdo. A resposta demonstra que a pessoa é capaz de se afastar do momento para analisar a situação de forma estratégica.",
+                  "Nota 5: O candidato não apenas separa o tom do conteúdo, mas usa a crítica como uma oportunidade de crescimento. A pessoa pode dizer que, quando o tom é agressivo, ela se concentra em entender o porquê do feedback e em como pode usá-lo para melhorar."
+                ],
+              },
+              {
+                id: "t6_q4",
+                text: "Se um amigo pisa na bola com você, como você alinha limites sem romper a relação?",
+                alternatives: [
+                  "Nota 1: O candidato não consegue responder à pergunta ou a resposta é vaga. A pessoa pode dizer que 'não tem amigos' ou que 'não se importa com o que as pessoas pensam'.",
+                  "Nota 2: O candidato tem a intenção de responder, mas a resposta é reativa e imatura. A pessoa pode dizer que 'termina a amizade'",
+                  "Nota 3: O candidato tem um método para lidar com a situação, mas a resposta é superficial e a reação é passiva. A pessoa pode dizer que 'não fala nada' ou que 'se afasta da pessoa', mas não explica como ela usa a situação para crescer.",
+                  "Nota 4: O candidato tem uma abordagem proativa para a situação. A pessoa pode dizer que conversa com o amigo para entender o que aconteceu e para expressar como se sentiu.",
+                  "Nota 5: O candidato não apenas alinha os limites, mas usa a situação como uma oportunidade de crescimento para a amizade. A pessoa pode dizer que, em uma situação de conflito, ela se concentra em entender o porquê do feedback e em como pode usá-lo para melhorar."
+                ],
+              },
+            ],
+          },
+          // Tópico 7: Ambiente e referências
+          {
+            topic: "Tópico 7: Ambiente e referências",
+            questions: [
+              {
+                id: "t7_q1",
+                text: "Em quais pessoas você se inspira e/ou modela?",
+                alternatives: [
+                  "Nota 1: Não se inspira em ninguém; mostra desinteresse, falta de ambição ou apatia.",
+                  "Nota 2: Inspiração vaga, sem profundidade, ou em figuras sem relação com negócios, ambição ou crescimento.",
+                  "Nota 3: Cita nomes conhecidos, mas sem clareza ou conexão profunda com os valores buscados.",
+                  "Nota 4: Inspiração em pessoas ligadas a negócios, superação, desenvolvimento pessoal. Justificativa coerente.",
+                  "Nota 5: Inspirações sólidas, com propósito claro. Fala com brilho nos olhos. Alinhamento total com a persona."
+                ],
+              },
+              {
+                id: "t7_q2",
+                text: "Cite um conselho ruim que você vê por aí e discorda. O que você faz no lugar?",
+                alternatives: [
+                  "Nota 1: A pessoa não consegue articular um conselho ou traz algo muito superficial e genérico. A resposta é vaga e demonstra falta de reflexão.",
+                  "Nota 2: A pessoa consegue identificar um conselho, mas a alternativa é frágil e focada no próprio benefício, sem uma visão mais ampla ou estratégica. A resposta não demonstra resiliência ou um pensamento crítico.",
+                  "Nota 3: A pessoa identifica um conselho de senso comum e oferece uma alternativa razoável e profissional. A resposta é satisfatória, mas um pouco genérica.",
+                  "Nota 4: A pessoa questiona um conceito amplamente aceito e oferece uma alternativa madura e bem fundamentada. Ela demonstra autocrítica e um senso de prioridade claro. A resposta revela uma mentalidade que busca o equilíbrio e a sustentabilidade a longo prazo",
+                  "Nota 5: A pessoa traz uma experiência real, que pode ser um feedback ou uma situação de vida. Ela demonstra inteligência emocional e proatividade ao não apenas discordar, mas também ao transformar a situação em uma oportunidade de crescimento. A resposta mostra que a pessoa é capaz de acatar um feedback construtivo e tomar ações que resultam em uma mudança positiva e mensurável."
+                ],
+              },
+              {
+                id: "t7_q3",
+                text: "Mostre 1 conteúdo recente que mudou a sua rotina. O que mudou na prática?",
+                alternatives: [
+                  "Nota 1: A pessoa não consegue trazer um conteúdo específico ou o que ela cita não gerou uma mudança real. A resposta é vaga e genérica, demonstrando que ela não se dedica ao aprendizado contínuo",
+                  "Nota 2: A pessoa menciona um conteúdo (um livro ou podcast, por exemplo), mas a mudança que ela descreve é superficial ou irrelevante. Ela pode dizer 'li um livro sobre foco e agora tento focar mais', sem dar um exemplo de como isso acontece.",
+                  "Nota 3: A pessoa cita um conteúdo e descreve uma mudança funcional, mas que não é transformadora. Ela pode mencionar um aplicativo de organização que começou a usar ou uma dica de produtividade que aplicou.",
+                  "Nota 4: A pessoa menciona um conteúdo que a fez questionar um hábito ou uma forma de pensar, e a mudança que ela descreve é visível e bem articulada. Ela consegue explicar o motivo por trás da mudança e como isso impactou seu dia a dia. Por exemplo, ela pode falar sobre um artigo que a fez repensar a gestão do tempo e como ela passou a usar blocos de foco para melhorar sua produtividade.",
+                  "Nota 5: A pessoa traz um conteúdo que a ajudou a crescer como pessoa ou na carreira, e a mudança é concreta e bem-sucedida. Ela descreve como o conteúdo a fez reavaliar um comportamento ou uma crença, e o que ela fez para mudar a rotina na prática, mostrando um exemplo específico e com resultados claros."
+                ],
+              },
+            ],
+          },
+          // Tópico 8: Comunicação e didática
+          {
+            topic: "Tópico 8: Comunicação e didática",
+            questions: [
+              {
+                id: "t8_q1",
+                text: "Escolha um tema que você domina e gosta muito (pode ser um esporte, um jogo, um hobby, um livro) e me explique como se eu fosse um completo leigo no assunto. Tente me convencer a experimentar.",
+                alternatives: [
+                  "Nota 1: Incapaz de articular uma explicação simples. Comunicação muito ruim, tímida ou ininteligível. Demonstra total falta da habilidade descrita.",
+                  "Nota 2: A comunicação é difícil e desorganizada. O candidato tem dificuldade em se fazer entender e não consegue estruturar o raciocínio.",
+                  "Nota 3: A explicação é funcional, mas um pouco confusa ou monótona. A voz é 'mansa' ou 'para dentro'. Falta estrutura e energia. Você entende, mas não se sente engajado.",
+                  "Nota 4: Consegue explicar o tema de forma clara e correta, mas com menos paixão e poder de persuasão. A comunicação é boa, mas não excepcional ou contagiante.",
+                  "Nota 5: O candidato se ilumina ao falar do tema. A voz tem energia, boa entonação e ritmo. A explicação é clara, didática e estruturada (começo, meio e fim). Ele consegue simplificar e usar analogias. É envolvente e persuasivo."
+                ],
+              },
+              {
+                id: "t8_q2",
+                text: "Conte uma situação em que você precisou convencer alguém e como estruturou sua fala.",
+                alternatives: [
+                  "Nota 1: A pessoa não consegue citar uma situação real ou a história é muito vaga. A resposta é superficial, demonstrando falta de habilidade em se comunicar ou em se expressar.",
+                  "Nota 2: A pessoa cita uma situação, mas não explica como estruturou sua fala. Ela pode dizer 'Eu convenci meu chefe a aprovar um projeto, eu apenas disse o que eu pensava'. A resposta é direta, mas não mostra inteligência estratégica.",
+                  "Nota 3: A pessoa descreve uma situação e explica a lógica por trás de sua fala, mas a estratégia é básica. Ela pode dizer: 'Eu tive que convencer um colega a usar uma ferramenta nova. Eu mostrei os benefícios, o quão fácil era e como ele economizaria tempo'. A resposta é funcional e mostra que a pessoa pensa sobre os argumentos",
+                  "Nota 4: A pessoa descreve uma situação em que precisou ser mais persuasiva e demonstra que se preparou para a conversa. Ela pode explicar que, antes de falar, se colocou no lugar da outra pessoa para entender as objeções, os medos ou os interesses dela.",
+                  "Nota 5: A pessoa traz uma situação complexa e mostra uma estratégia de comunicação detalhada e bem-sucedida. Ela pode descrever como identificou o problema, fez uma pesquisa prévia para ter dados e fatos, e depois estruturou sua fala em etapas, começando por criar uma conexão, apresentando os fatos, e, por fim, apresentando a solução com foco nos benefícios para a outra pessoa. A resposta demonstra pensamento estratégico, planejamento e um alto nível de inteligência interpessoal."
+                ],
+              },
+              {
+                id: "t8_q3",
+                text: "Descreva uma situação em que o outro discordava de você. Como você mudou a visão dele?",
+                alternatives: [
+                  "Nota 1: A pessoa não consegue descrever uma situação real ou a história é muito vaga e unilateral. A resposta é superficial, focada em como ela estava certa e o outro, errado.",
+                  "Nota 2: A pessoa descreve uma situação, mas a mudança de visão foi forçada ou superficial. Ela pode dizer 'ele discordava de mim, mas eu usei minha autoridade para que ele fizesse o que eu mandava'. A resposta demonstra uma falta de maturidade e de inteligência interpessoal.",
+                  "Nota 3: A pessoa descreve uma situação em que o outro discordava, e a solução foi um compromisso ou um consenso. A resposta é funcional e mostra que a pessoa é capaz de encontrar um ponto de equilíbrio. No entanto, ela não explica como ela se preparou para a conversa, como ela ouviu o ponto de vista do outro, ou como a visão do outro foi integrada na solução final.",
+                  "Nota 4: A pessoa descreve uma situação complexa e mostra que, antes de tentar persuadir, ela se dedicou a entender o ponto de vista do outro. Ela pode explicar que fez perguntas, ouviu as preocupações e os medos, e só depois apresentou sua visão, adaptando a sua abordagem para as necessidades da outra pessoa.",
+                  "Nota 5: A pessoa traz uma situação complexa e descreve a sua abordagem de forma detalhada e bem-sucedida. Ela demonstra que, para mudar a visão do outro, ela primeiro se dedicou a validar o ponto de vista dele. Ela pode dizer 'eu não tentei mudar a visão dele de imediato. Eu primeiro me coloquei no lugar dele, validando seus receios, e então mostrei um novo caminho para a solução, usando os próprios argumentos dele a meu favor'."
+                ],
+              },
+            ],
+          },
+          // Tópico 9: Foco e Concentração
+          {
+            topic: "Tópico 9: Foco e Concentração",
+            questions: [
+              {
+                id: "t9_q1",
+                text: "Em um dia corrido, como você prioriza as tarefas para manter o foco no que realmente importa?",
+                alternatives: [
+                  "Nota 1: O candidato não tem um método e age de forma passiva, sem um plano.",
+                  "Nota 2: A pessoa tem a intenção de priorizar, mas a rotina é superficial e ineficaz.",
+                  "Nota 3: O candidato descreve um sistema que funciona, mas é básico e previsível.",
+                  "Nota 4: A pessoa descreve um sistema bem definido e proativo.",
+                  "Nota 5: O candidato não tem apenas um sistema, ele tem uma filosofia de organização e de foco."
+                ],
+              },
+              {
+                id: "t9_q2",
+                text: "O que você faz quando se sente distraído ou procrastinando?",
+                alternatives: [
+                  "Nota 1: A pessoa ignora a distração e não toma nenhuma atitude.",
+                  "Nota 2: A pessoa menciona uma ação reativa, como 'eu espero que a distração passe'.",
+                  "Nota 3: A pessoa descreve uma ação funcional, mas que não é transformadora.",
+                  "Nota 4: O candidato tem a intenção de lidar com a distração, e a resposta é proativa e bem definida.",
+                  "Nota 5: A pessoa não apenas descreve a ação, mas a transforma em um processo de autoconhecimento."
+                ],
+              },
+            ],
+          },
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const evaluationSections = document.getElementById('evaluation-sections');
+            const saveButton = document.getElementById('save-button');
+            const currentDateInput = document.getElementById('current-date');
+
+            currentDateInput.value = new Date().toLocaleDateString('pt-BR');
+
+            // Gera as seções de avaliação dinamicamente
+            evaluationData.forEach((topic, index) => {
+                const section = document.createElement('div');
+                section.className = 'mb-8 p-6 bg-gray-50 rounded-lg shadow-sm border border-gray-200';
+                section.innerHTML = `
+                    <h2 class="text-2xl font-bold text-gray-700 mb-4">${topic.topic}</h2>
+                    <label class="block text-gray-700 font-medium mb-2">Selecione a Pergunta Feita:</label>
+                    <select id="question-select-${index}" class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="" disabled selected>-- Escolha uma pergunta --</option>
+                        ${topic.questions.map(q => `<option value="${q.id}">${q.text}</option>`).join('')}
+                    </select>
+
+                    <div id="evaluation-fields-${index}" class="hidden">
+                        <label class="block text-gray-700 font-medium mb-2">Avaliação:</label>
+                        <select id="answer-select-${index}" class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"></select>
+                        
+                        <label class="block text-gray-700 font-medium mb-2">Observações/Notas:</label>
+                        <textarea id="notes-textarea-${index}" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]" placeholder="Detalhes sobre a resposta do candidato..."></textarea>
+                    </div>
+                `;
+                evaluationSections.appendChild(section);
+
+                // Adiciona a lógica para mostrar as alternativas corretas
+                const questionSelect = document.getElementById(`question-select-${index}`);
+                const evaluationFields = document.getElementById(`evaluation-fields-${index}`);
+                const answerSelect = document.getElementById(`answer-select-${index}`);
+
+                questionSelect.addEventListener('change', (event) => {
+                    const selectedQuestionId = event.target.value;
+                    const selectedQuestion = topic.questions.find(q => q.id === selectedQuestionId);
+
+                    evaluationFields.classList.remove('hidden');
+                    answerSelect.innerHTML = `<option value="" disabled selected>-- Selecione a avaliação --</option>`;
+                    selectedQuestion.alternatives.forEach(alt => {
+                        const option = document.createElement('option');
+                        option.value = alt;
+                        option.textContent = alt;
+                        answerSelect.appendChild(option);
+                    });
+                });
+            });
+
+            // Lógica para salvar os dados
+            saveButton.addEventListener('click', () => {
+                const candidateName = document.getElementById('candidate-name').value;
+                const candidateRole = document.getElementById('candidate-role').value;
+                const interviewerName = document.getElementById('interviewer-name').value;
+                const currentDate = document.getElementById('current-date').value;
+
+                const evaluations = [];
+                evaluationData.forEach((topic, index) => {
+                    const questionSelect = document.getElementById(`question-select-${index}`);
+                    const answerSelect = document.getElementById(`answer-select-${index}`);
+                    const notesTextarea = document.getElementById(`notes-textarea-${index}`);
+
+                    if (questionSelect.value) {
+                        const selectedQuestion = topic.questions.find(q => q.id === questionSelect.value);
+                        evaluations.push({
+                            topic: topic.topic,
+                            question: selectedQuestion.text,
+                            answer: answerSelect.value,
+                            notes: notesTextarea.value,
+                        });
+                    }
+                });
+
+                // Função para escapar valores com vírgulas e aspas para CSV
+                const escapeCsv = (value) => {
+                    if (value.includes(',') || value.includes('"')) {
+                        return `"${value.replace(/"/g, '""')}"`;
+                    }
+                    return value;
+                };
+
+                // Cria o cabeçalho do CSV
+                let csvContent = "Nome do Candidato,Vaga,Entrevistador(a),Data,Tópico,Pergunta,Avaliação,Observações\n";
+
+                // Adiciona os dados de cada avaliação
+                evaluations.forEach(evalItem => {
+                    csvContent += [
+                        escapeCsv(candidateName),
+                        escapeCsv(candidateRole),
+                        escapeCsv(interviewerName),
+                        escapeCsv(currentDate),
+                        escapeCsv(evalItem.topic),
+                        escapeCsv(evalItem.question),
+                        escapeCsv(evalItem.answer),
+                        escapeCsv(evalItem.notes)
+                    ].join(',') + '\n';
+                });
+
+                // Cria um objeto Blob com o conteúdo CSV
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a");
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", `avaliacao_entrevista_${candidateName.replace(/\s/g, '_')}_${new Date().toISOString().slice(0, 10)}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                alert('Avaliação salva e exportada como CSV!');
+            });
+        });
+    </script>
+
+</body>
+</html>
