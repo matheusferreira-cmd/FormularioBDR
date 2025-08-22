@@ -469,6 +469,9 @@
             const saveButton = document.getElementById('save-button');
             const currentDateInput = document.getElementById('current-date');
 
+            // Troque esta URL pela URL do seu Apps Script
+            const SCRIPT_URL = 'https://script.google.com/a/macros/goatdigital.com.br/s/AKfycbyiiz-SMAYE6lX_mKhDN_EO-NkSg2pxASybYjTK5nhhjZ-cefad0wIVHbX8-Q7Phqc/exec';
+
             currentDateInput.value = new Date().toLocaleDateString('pt-BR');
 
             // Gera as seções de avaliação dinamicamente
@@ -537,43 +540,30 @@
                     }
                 });
 
-                // Função para escapar valores com vírgulas e aspas para CSV
-                const escapeCsv = (value) => {
-                    if (value.includes(',') || value.includes('"')) {
-                        return `"${value.replace(/"/g, '""')}"`;
-                    }
-                    return value;
-                };
+                // Cria um objeto FormData com todos os dados a serem enviados
+                const formData = new FormData();
+                formData.append('candidateName', candidateName);
+                formData.append('candidateRole', candidateRole);
+                formData.append('interviewerName', interviewerName);
+                formData.append('currentDate', currentDate);
+                formData.append('evaluations', JSON.stringify(evaluations));
 
-                // Cria o cabeçalho do CSV
-                let csvContent = "Nome do Candidato,Vaga,Entrevistador(a),Data,Tópico,Pergunta,Avaliação,Observações\n";
-
-                // Adiciona os dados de cada avaliação
-                evaluations.forEach(evalItem => {
-                    csvContent += [
-                        escapeCsv(candidateName),
-                        escapeCsv(candidateRole),
-                        escapeCsv(interviewerName),
-                        escapeCsv(currentDate),
-                        escapeCsv(evalItem.topic),
-                        escapeCsv(evalItem.question),
-                        escapeCsv(evalItem.answer),
-                        escapeCsv(evalItem.notes)
-                    ].join(',') + '\n';
+                // Envia os dados para a URL do Apps Script
+                fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: formData,
+                    mode: 'no-cors' // Use 'no-cors' para evitar erros de CORS
+                })
+                .then(response => {
+                    // Como estamos usando 'no-cors', a resposta não pode ser lida.
+                    // A requisição foi enviada com sucesso, então mostramos a mensagem.
+                    console.log('Dados enviados com sucesso.');
+                    alert('Avaliação salva na sua planilha Google!');
+                })
+                .catch(error => {
+                    console.error('Erro ao enviar os dados:', error);
+                    alert('Houve um erro ao salvar a avaliação. Verifique o console.');
                 });
-
-                // Cria um objeto Blob com o conteúdo CSV
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement("a");
-                const url = URL.createObjectURL(blob);
-                link.setAttribute("href", url);
-                link.setAttribute("download", `avaliacao_entrevista_${candidateName.replace(/\s/g, '_')}_${new Date().toISOString().slice(0, 10)}.csv`);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-                alert('Avaliação salva e exportada como CSV!');
             });
         });
     </script>
